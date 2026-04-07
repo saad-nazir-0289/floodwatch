@@ -167,3 +167,10 @@ steps[3].info("4. Review masks, metrics, and downloads.")
 st.caption(
     "This demo is designed for satellite, drone, and aerial imagery only. Results are explainable and fast, but still approximate."
 )
+
+st.markdown("---")
+footer_left, footer_right = st.columns([1.2, 1])
+with footer_left:
+    st.caption("Built for the Indus Urban FloodWatch concept demo. Use the built-in demo sets for the fastest walkthrough.")
+with footer_right:
+    st.caption("Pages available: Upload & Analyze, FAQ, Project Background.")
