@@ -38,6 +38,11 @@ PAIR_DEMOS = {
 st.title("FloodWatch Pakistan")
 st.caption("Upload satellite, drone, or aerial imagery only. Ground-level photos are intentionally not supported.")
 
+tip1, tip2, tip3 = st.columns(3)
+tip1.info("Fastest route: pick a built-in demo image.")
+tip2.info("Best comparisons come from similar before/after framing.")
+tip3.info("Use overlay sliders to make exported maps easier to read.")
+
 with st.sidebar:
     st.header("Analysis Controls")
     mode = st.radio("Mode", ["Single Image Analysis", "Before/After Comparison"])
