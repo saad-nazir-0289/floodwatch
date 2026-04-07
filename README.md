@@ -17,6 +17,7 @@ The demo intentionally does **not** support ground-level or phone photos.
 - before/after change mapping
 - quick metrics for water coverage, built-up proxy coverage, changed area, and connected regions
 - downloadable PNG outputs
+- built-in demo imagery for instant testing without uploads
 
 ## Local run
 

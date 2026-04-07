@@ -135,6 +135,7 @@ with overview_left:
         - Creates change maps for before/after imagery using aligned differencing and structural similarity cues.
         - Reports quick metrics such as estimated water coverage, built-up proxy coverage, changed area, and connected flood regions.
         - Produces demo-friendly thematic outputs without requiring GPUs or paid APIs.
+        - Includes built-in demo imagery so users can try the app instantly without uploading files.
         """
     )
 
