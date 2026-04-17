@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import pandas as pd
 import streamlit as st
 
 
@@ -11,5 +10,5 @@ def render_metric_grid(metrics: dict) -> None:
         cols[idx % len(cols)].metric(label, value)
 
 
-def metrics_dataframe(metrics: dict) -> pd.DataFrame:
-    return pd.DataFrame({"Metric": list(metrics.keys()), "Value": list(metrics.values())})
+def metrics_dataframe(metrics: dict) -> list[dict[str, object]]:
+    return [{"Metric": label, "Value": value} for label, value in metrics.items()]

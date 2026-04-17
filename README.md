@@ -1,6 +1,6 @@
 # Indus Urban FloodWatch
 
-`FloodWatch Pakistan` is a Streamlit demo for overhead imagery analysis focused on flood extent, water spread, urban footprint proxies, and before/after change detection.
+`FloodWatch Pakistan` now includes a Vercel-ready Flask frontend for overhead imagery analysis focused on flood extent, water spread, urban footprint proxies, and before/after change detection.
 
 ## Overview
 
@@ -29,10 +29,23 @@ The demo intentionally does **not** support ground-level or phone photos.
 - `Demo Set B`: coastal flood and urban pressure before/after pair
 - `Demo Set C`: single-image flood scene
 
-## Local run
+## Vercel deploy
+
+1. Import the repo into Vercel.
+2. Let Vercel build the Python app from `api/index.py`.
+3. Deploy.
+
+## Local run (Vercel app)
 
 ```bash
 pip install -r requirements.txt
+flask --app api/index.py run
+```
+
+## Local run (legacy Streamlit app)
+
+```bash
+pip install -r requirements-streamlit.txt
 streamlit run app.py
 ```
 
@@ -48,11 +61,14 @@ streamlit run app.py
 
 ```text
 app.py
+api/
 pages/
+templates/
 utils/
 assets/
 .streamlit/
 requirements.txt
+requirements-streamlit.txt
 ```
 
 ## Notes
@@ -60,3 +76,4 @@ requirements.txt
 - This is a visual decision-support demo, not a calibrated operational flood model.
 - Best results come from clear overhead images with visible water, terrain, and built structures.
 - Outputs should be reviewed before being used in formal reports.
+- Vercel uses the Flask app; the original Streamlit app remains available for local or Streamlit Cloud use.

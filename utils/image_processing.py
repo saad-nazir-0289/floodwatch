@@ -6,8 +6,6 @@ from io import BytesIO
 import cv2
 import numpy as np
 from PIL import Image
-from skimage import exposure
-from skimage.metrics import structural_similarity
 
 
 @dataclass
@@ -49,8 +47,10 @@ def resize_for_demo(image: np.ndarray, max_side: int = 1400) -> np.ndarray:
 
 
 def enhance_image(image: np.ndarray, contrast: float = 1.2) -> np.ndarray:
-    image_f = image.astype(np.float32) / 255.0
-    image_f = exposure.adjust_gamma(image_f, gamma=0.95)
+    gamma = 0.95
+    lookup = np.array([((value / 255.0) ** gamma) * 255 for value in range(256)], dtype=np.uint8)
+    gamma_corrected = cv2.LUT(image, lookup)
+    image_f = gamma_corrected.astype(np.float32) / 255.0
     image_f = np.clip((image_f - 0.5) * contrast + 0.5, 0.0, 1.0)
     return (image_f * 255).astype(np.uint8)
 
@@ -213,11 +213,15 @@ def analyze_change(before: np.ndarray, after: np.ndarray, sensitivity: float = 0
     diff_norm = _normalize_gray(diff)
 
     _, diff_mask = cv2.threshold(diff_norm, int(28 + 22 * (1 - sensitivity)), 255, cv2.THRESH_BINARY)
-    score, ssim_map = structural_similarity(before_gray, after_gray, full=True)
-    ssim_map = ((1 - ssim_map) * 255).astype(np.uint8)
-    _, ssim_mask = cv2.threshold(ssim_map, int(42 + 22 * (1 - sensitivity)), 255, cv2.THRESH_BINARY)
+    score, similarity_map = estimate_similarity(before_gray, after_gray)
+    _, similarity_mask = cv2.threshold(
+        similarity_map,
+        int(42 + 22 * (1 - sensitivity)),
+        255,
+        cv2.THRESH_BINARY,
+    )
 
-    change_mask = cv2.bitwise_or(diff_mask, ssim_mask)
+    change_mask = cv2.bitwise_or(diff_mask, similarity_mask)
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
     change_mask = cv2.morphologyEx(change_mask, cv2.MORPH_CLOSE, kernel, iterations=2)
     change_mask = cv2.morphologyEx(change_mask, cv2.MORPH_OPEN, kernel, iterations=1)
@@ -241,7 +245,7 @@ def analyze_change(before: np.ndarray, after: np.ndarray, sensitivity: float = 0
         "Changed area (%)": float(round(100 * np.count_nonzero(change_mask) / total_pixels, 2)),
         "New water / flood gain (%)": float(round(100 * np.count_nonzero(flood_gain) / total_pixels, 2)),
         "Urban proxy change (%)": float(round(100 * np.count_nonzero(urban_change) / total_pixels, 2)),
-        "SSIM similarity": round(float(score), 3),
+        "Similarity score": round(float(score), 3),
     }
 
     return ChangeResult(
@@ -266,3 +270,19 @@ def to_png_bytes(image: np.ndarray) -> bytes:
     buffer = BytesIO()
     pil_image.save(buffer, format="PNG")
     return buffer.getvalue()
+
+
+def estimate_similarity(before_gray: np.ndarray, after_gray: np.ndarray) -> tuple[float, np.ndarray]:
+    before_f = before_gray.astype(np.float32) / 255.0
+    after_f = after_gray.astype(np.float32) / 255.0
+
+    tonal_diff = np.abs(before_f - after_f)
+    before_blur = cv2.GaussianBlur(before_f, (11, 11), 1.5)
+    after_blur = cv2.GaussianBlur(after_f, (11, 11), 1.5)
+    before_grad = cv2.Laplacian(before_blur, cv2.CV_32F)
+    after_grad = cv2.Laplacian(after_blur, cv2.CV_32F)
+    structure_diff = np.clip(np.abs(before_grad - after_grad), 0.0, 1.0)
+
+    combined = np.clip(0.65 * tonal_diff + 0.35 * structure_diff, 0.0, 1.0)
+    similarity_score = float(np.clip(1.0 - combined.mean(), 0.0, 1.0))
+    return similarity_score, (combined * 255).astype(np.uint8)

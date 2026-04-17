@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}FAQ | FloodWatch Pakistan{% endblock %}
+
+{% block content %}
+<section class="panel content-block">
+  <p class="eyebrow">FAQ</p>
+  <h1>Quick answers for demo users and reviewers</h1>
+  <div class="faq-list">
+    {% for item in faqs %}
+    <details class="faq-item">
+      <summary>{{ item.question }}</summary>
+      <p>{{ item.answer }}</p>
+    </details>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
